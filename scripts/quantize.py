@@ -41,7 +41,7 @@ def main():
     )
     converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
     converter.inference_input_type = tf.uint8
-    converter.inference_output_type = tf.float32
+    converter.inference_output_type = tf.uint8
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_bytes(converter.convert())
     print(f"Saved {args.output} ({args.output.stat().st_size} bytes)")
