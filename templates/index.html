@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EdgeVision — Offline AI</title><link rel="stylesheet" href="/static/style.css"></head>
+<body>
+<div class="layout">
+<aside><div class="logo"><span class="logo-icon">◉</span> EdgeVision</div><div class="nav selected">◫ &nbsp; Live detection</div><div class="nav">◎ &nbsp; System status</div><div class="bottom">OFFLINE AI ENGINE<br><small>All processing stays on-device.</small></div></aside>
+<main>
+<header><div><div class="eyebrow">EDGE INTELLIGENCE / LIVE MONITOR</div><h1>Object detection</h1><p>Real-time local inference. No cloud connection required.</p></div><div class="live"><span></span> LOCAL STREAM</div></header>
+<section class="metrics"><div class="metric"><div class="label">Processing speed</div><strong id="fps">—</strong><small>Frames per second</small></div><div class="metric"><div class="label">Inference latency</div><strong id="latency">—</strong><small>Milliseconds per frame</small></div><div class="metric"><div class="label">Frames analyzed</div><strong id="frames">0</strong><small>Current session</small></div></section>
+<div class="columns"><section class="card video-card"><div class="card-title"><h2>Camera feed</h2><span>Live · MJPEG</span></div><div class="feed"><img id="stream" src="/video" alt="Annotated camera stream"><div class="feed-error" id="feed-error">Waiting for camera and model…</div></div><div class="caption">Bounding boxes and confidence scores are generated locally.</div></section>
+<section class="card findings"><div class="card-title"><h2>Detected objects</h2><span id="count">0 active</span></div><div id="detections" class="objects"><div class="empty">Objects will appear here when detected.</div></div><div class="privacy">◆ &nbsp; Privacy by design<br><small>Frames are not uploaded or stored.</small></div></section></div>
+<footer>EdgeVision · Raspberry Pi / Desktop · TensorFlow Lite + OpenCV</footer>
+</main></div>
+<script>
+const stream = document.getElementById('stream');
+stream.addEventListener('load', () => document.getElementById('feed-error').style.display = 'none');
+async function refresh() {
+  try {
+    const response = await fetch('/api/status', { cache: 'no-store' });
+    if (!response.ok) return;
+    const data = await response.json();
+    document.getElementById('fps').textContent = data.fps == null ? '—' : data.fps.toFixed(1);
+    document.getElementById('latency').textContent = data.inference_ms == null ? '—' : data.inference_ms.toFixed(1);
+    document.getElementById('frames').textContent = data.frames.toLocaleString();
+    document.getElementById('count').textContent = data.detections.length + ' active';
+    document.getElementById('detections').innerHTML = data.detections.length
+      ? data.detections.map(item => '<div class="object"><div class="object-name"></div><div class="confidence"></div></div>').join('')
+      : '<div class="empty">No objects detected in this frame.</div>';
+    document.querySelectorAll('.object').forEach((row, index) => {
+      row.querySelector('.object-name').textContent = data.detections[index].label;
+      row.querySelector('.confidence').textContent = Math.round(data.detections[index].confidence * 100) + '% confidence';
+    });
+  } catch (_) {}
+}
+refresh(); setInterval(refresh, 900);
+</script>
+</body></html>
