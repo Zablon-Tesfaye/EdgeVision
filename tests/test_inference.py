@@ -32,3 +32,10 @@ def test_filters_low_confidence():
 def test_rejects_incompatible_model_outputs():
     with pytest.raises(ValueError):
         decode_ssd_outputs([np.array([1])], [], 100, 100, 0.5)
+
+
+def test_dequantizes_integer_output():
+    from edgevision.inference import dequantize_output
+    raw = np.array([10, 20], dtype=np.uint8)
+    decoded = dequantize_output(raw, {"quantization": (0.1, 10)})
+    np.testing.assert_allclose(decoded, [0.0, 1.0], atol=1e-6)
