@@ -67,8 +67,16 @@ class ObjectDetector:
         outputs = [self.interpreter.get_tensor(detail["index"]) for detail in self.output_details]
         elapsed_ms = (perf_counter() - started) * 1000
         height, width = frame.shape[:2]
+        outputs = [dequantize_output(value, detail) for value, detail in zip(outputs, self.output_details)]
         detections = decode_ssd_outputs(outputs, self.labels, width, height, self.threshold)
         return FrameResult(tuple(detections), elapsed_ms, width, height)
+
+
+def dequantize_output(value: np.ndarray, detail: dict) -> np.ndarray:
+    scale, zero_point = detail.get("quantization", (0.0, 0))
+    if np.issubdtype(value.dtype, np.integer) and scale:
+        return (value.astype(np.float32) - zero_point) * scale
+    return value
 
 
 def decode_ssd_outputs(outputs: list[np.ndarray], labels: list[str], width: int, height: int, threshold: float) -> list[Detection]:
