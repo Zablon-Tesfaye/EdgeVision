@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.pytest_cache/
+.coverage
+models/*.tflite
+models/*.onnx
+results/
+*.mp4
+*.avi
+.DS_Store
