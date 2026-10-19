@@ -1,0 +1,3 @@
+# Raspberry Pi: install system OpenCV if preferred; install a compatible TFLite runtime.
+-r requirements.txt
+tflite-runtime>=2.14
