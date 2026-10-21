@@ -95,7 +95,11 @@ def decode_ssd_outputs(outputs: list[np.ndarray], labels: list[str], width: int,
         score = float(scores[index])
         if not np.isfinite(score) or score < threshold:
             continue
-        if not np.all(np.isfinite(boxes[index])):\n            continue\n        top, left, bottom, right = np.clip(boxes[index], 0.0, 1.0)\n        if bottom <= top or right <= left:\n            continue
+        if not np.all(np.isfinite(boxes[index])):
+            continue
+        top, left, bottom, right = np.clip(boxes[index], 0.0, 1.0)
+        if bottom <= top or right <= left:
+            continue
         class_id = int(classes[index])
         label = labels[class_id] if 0 <= class_id < len(labels) else f"class_{class_id}"
         found.append(Detection(label, score, (
