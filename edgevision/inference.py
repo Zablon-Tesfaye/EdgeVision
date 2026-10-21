@@ -7,6 +7,8 @@ import cv2
 import numpy as np
 
 from .types import Detection, FrameResult
+from .labels import read_labels
+from .postprocess import suppress_overlaps
 
 
 def _interpreter(model_path: Path, threads: int):
@@ -37,7 +39,7 @@ class ObjectDetector:
     def __init__(self, model_path: Path, labels_path: Path, threshold: float = 0.45, threads: int = 2):
         if not model_path.is_file():
             raise FileNotFoundError(f"Model not found: {model_path}")
-        self.labels = load_labels(labels_path)
+        self.labels = read_labels(labels_path)
         self.threshold = threshold
         self.interpreter = _interpreter(model_path, threads)
         self.interpreter.allocate_tensors()
@@ -69,7 +71,7 @@ class ObjectDetector:
         height, width = frame.shape[:2]
         outputs = [dequantize_output(value, detail) for value, detail in zip(outputs, self.output_details)]
         detections = decode_ssd_outputs(outputs, self.labels, width, height, self.threshold)
-        return FrameResult(tuple(detections), elapsed_ms, width, height)
+        return FrameResult(tuple(suppress_overlaps(detections)), elapsed_ms, width, height)
 
 
 def dequantize_output(value: np.ndarray, detail: dict) -> np.ndarray:
@@ -87,13 +89,13 @@ def decode_ssd_outputs(outputs: list[np.ndarray], labels: list[str], width: int,
     boxes = np.asarray(boxes).reshape(-1, 4)
     classes = np.asarray(classes).reshape(-1)
     scores = np.asarray(scores).reshape(-1)
-    limit = min(int(np.asarray(count).item()), len(boxes), len(classes), len(scores))
+    limit = min(max(0, int(np.asarray(count).item())), len(boxes), len(classes), len(scores))
     found = []
     for index in range(limit):
         score = float(scores[index])
-        if score < threshold:
+        if not np.isfinite(score) or score < threshold:
             continue
-        top, left, bottom, right = np.clip(boxes[index], 0.0, 1.0)
+        if not np.all(np.isfinite(boxes[index])):\n            continue\n        top, left, bottom, right = np.clip(boxes[index], 0.0, 1.0)\n        if bottom <= top or right <= left:\n            continue
         class_id = int(classes[index])
         label = labels[class_id] if 0 <= class_id < len(labels) else f"class_{class_id}"
         found.append(Detection(label, score, (
