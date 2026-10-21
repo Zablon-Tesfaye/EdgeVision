@@ -9,6 +9,7 @@ from flask import Flask, Response, jsonify, render_template
 from .camera import annotate, open_camera
 from .config import Settings
 from .inference import ObjectDetector
+from .health import readiness
 
 app = Flask(__name__, template_folder="../templates", static_folder="../static")
 settings = Settings()
@@ -62,6 +63,12 @@ def frames():
                 })
             yield b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + buffer.tobytes() + b"\r\n"
             sleep(max(0, 1 / settings.max_fps - (perf_counter() - now)))
+
+
+@app.get("/api/health")
+def health():
+    report = readiness(settings.model_path, settings.labels_path)
+    return jsonify(report), 200 if report["ready"] else 503
 
 
 @app.get("/video")
