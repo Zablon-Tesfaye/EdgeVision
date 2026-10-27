@@ -9,6 +9,7 @@ import numpy as np
 from .types import Detection, FrameResult
 from .labels import read_labels
 from .postprocess import suppress_overlaps
+from .geometry import normalized_box_to_pixels
 
 
 def _interpreter(model_path: Path, threads: int):
@@ -102,7 +103,8 @@ def decode_ssd_outputs(outputs: list[np.ndarray], labels: list[str], width: int,
             continue
         class_id = int(classes[index])
         label = labels[class_id] if 0 <= class_id < len(labels) else f"class_{class_id}"
-        found.append(Detection(label, score, (
-            int(left * width), int(top * height), int(right * width), int(bottom * height)
-        )))
+        pixel_box = normalized_box_to_pixels((top, left, bottom, right), width, height)
+        if pixel_box is None:
+            continue
+        found.append(Detection(label, score, pixel_box))
     return sorted(found, key=lambda item: item.score, reverse=True)
