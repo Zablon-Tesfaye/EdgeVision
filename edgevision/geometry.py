@@ -1,10 +1,14 @@
 """Pixel-safe conversion from normalized model bounding boxes."""
 
+import math
+
 
 def normalized_box_to_pixels(box: tuple[float, float, float, float],
                              width: int, height: int) -> tuple[int, int, int, int] | None:
     if width < 1 or height < 1:
         raise ValueError("Image dimensions must be positive")
+    if len(box) != 4 or any(not math.isfinite(float(value)) for value in box):
+        return None
     top, left, bottom, right = [max(0.0, min(1.0, float(v))) for v in box]
     if bottom <= top or right <= left:
         return None
