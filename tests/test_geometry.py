@@ -13,3 +13,8 @@ def test_rejects_degenerate_box():
 def test_rejects_invalid_dimensions():
     with pytest.raises(ValueError):
         normalized_box_to_pixels((0, 0, 1, 1), 0, 100)
+
+
+def test_rejects_nonfinite_box_coordinates():
+    assert normalized_box_to_pixels((float("nan"), 0, 1, 1), 100, 100) is None
+    assert normalized_box_to_pixels((0, 0, float("inf"), 1), 100, 100) is None
