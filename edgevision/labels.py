@@ -12,7 +12,12 @@ def parse_labels(text: str) -> list[str]:
             continue
         number, sep, name = line.partition(" ")
         if sep and number.isdigit():
-            entries[int(number)] = name.strip()
+            index = int(number)
+            if index > 10000 or not name.strip():
+                raise ValueError("Invalid indexed class label")
+            if index in entries:
+                raise ValueError("Duplicate class label index")
+            entries[index] = name.strip()
         else:
             plain.append(line)
     if entries and plain:
