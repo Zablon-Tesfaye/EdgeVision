@@ -13,3 +13,13 @@ def test_plain_labels():
 def test_mixed_format_is_rejected():
     with pytest.raises(ValueError):
         parse_labels("0 background\ndog")
+
+
+def test_duplicate_index_is_rejected():
+    with pytest.raises(ValueError, match="Duplicate"):
+        parse_labels("0 background\n0 person")
+
+
+def test_empty_indexed_label_is_rejected():
+    with pytest.raises(ValueError, match="Invalid"):
+        parse_labels("0 ")
