@@ -10,6 +10,8 @@ def parse_labels(text: str) -> list[str]:
         line = raw.strip()
         if not line:
             continue
+        if line.isdigit():
+            raise ValueError("Invalid indexed class label")
         number, sep, name = line.partition(" ")
         if sep and number.isdigit():
             index = int(number)
