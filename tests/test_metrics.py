@@ -26,3 +26,9 @@ def test_rejects_negative_latency():
 def test_invalid_threshold():
     with pytest.raises(ValueError):
         Settings(confidence=1.0).validate()
+
+
+@pytest.mark.parametrize("latency", [float("nan"), float("inf"), float("-inf")])
+def test_rejects_nonfinite_latency(latency):
+    with pytest.raises(ValueError):
+        LatencyTracker().add(latency)
