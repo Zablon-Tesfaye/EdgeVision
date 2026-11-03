@@ -1,6 +1,7 @@
 """Simple, reproducible runtime metrics."""
 
 from dataclasses import dataclass, field
+import math
 from statistics import mean
 
 
@@ -9,7 +10,7 @@ class LatencyTracker:
     samples_ms: list[float] = field(default_factory=list)
 
     def add(self, latency_ms: float) -> None:
-        if latency_ms < 0:
+        if not math.isfinite(latency_ms) or latency_ms < 0:
             raise ValueError("Latency cannot be negative")
         self.samples_ms.append(latency_ms)
 
