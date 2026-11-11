@@ -5,7 +5,9 @@ import math
 
 def normalized_box_to_pixels(box: tuple[float, float, float, float],
                              width: int, height: int) -> tuple[int, int, int, int] | None:
-    if width < 1 or height < 1:
+    if (not isinstance(width, int) or isinstance(width, bool) or
+            not isinstance(height, int) or isinstance(height, bool) or
+            width < 1 or height < 1):
         raise ValueError("Image dimensions must be positive")
     if len(box) != 4 or any(not math.isfinite(float(value)) for value in box):
         return None
