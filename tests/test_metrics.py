@@ -32,3 +32,9 @@ def test_invalid_threshold():
 def test_rejects_nonfinite_latency(latency):
     with pytest.raises(ValueError):
         LatencyTracker().add(latency)
+
+
+@pytest.mark.parametrize("latency", [True, "10", None])
+def test_rejects_nonnumeric_latency(latency):
+    with pytest.raises(ValueError):
+        LatencyTracker().add(latency)
