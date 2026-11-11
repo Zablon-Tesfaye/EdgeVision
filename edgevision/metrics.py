@@ -10,8 +10,8 @@ class LatencyTracker:
     samples_ms: list[float] = field(default_factory=list)
 
     def add(self, latency_ms: float) -> None:
-        if not math.isfinite(latency_ms) or latency_ms < 0:
-            raise ValueError("Latency cannot be negative")
+        if isinstance(latency_ms, bool) or not isinstance(latency_ms, (int, float)) or not math.isfinite(latency_ms) or latency_ms < 0:
+            raise ValueError("Latency must be finite and nonnegative")
         self.samples_ms.append(latency_ms)
 
     def summary(self) -> dict:
